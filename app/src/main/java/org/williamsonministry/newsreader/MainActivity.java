@@ -16,17 +16,21 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
-    private RecyclerView recyclerView;
+    private ArrayList<NewsItem> news;
 
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        news = new ArrayList<>();
 
         recyclerView = findViewById(R.id.recyclerView);
 
@@ -81,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             String tagName = parser.getName();
-                            switch (tagName)    {
+                            switch (tagName) {
                                 case "title":
                                     title = getContent(parser, tagName);
                                     break;
@@ -91,19 +95,22 @@ public class MainActivity extends AppCompatActivity {
                                 case "link":
                                     link = getContent(parser, tagName);
                                     break;
-                                case "coverimages":
+                                case "coverImages":
                                     coverImages = getContent(parser, tagName);
                                     break;
-                                case "pubdate":
+                                case "pubDate":
                                     pubDate = getContent(parser, tagName);
                                     break;
                                 default:
-                                    // TODO: 1/15/2022 Skip Tag 
+                                    skipTag(parser);
                                     break;
                             }
                         }
+
+                        NewsItem item = new NewsItem(title, description, link, coverImages, pubDate);
+                        news.add(item);
                     } else {
-                        // TODO: 1/15/2022 Skip Tag 
+                        skipTag(parser);
                     }
                 }
             }
@@ -123,16 +130,37 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-        private String getContent (XmlPullParser parser, String tagName) throws IOException, XmlPullParserException {
+        private String getContent(XmlPullParser parser, String tagName) throws IOException, XmlPullParserException {
             String content = "";
             parser.require(XmlPullParser.START_TAG, null, tagName);
 
-            if (parser.next() == XmlPullParser.TEXT)    {
+            if (parser.next() == XmlPullParser.TEXT) {
                 content = parser.getText();
                 parser.next();
             }
 
             return content;
+        }
+
+        private void skipTag(XmlPullParser parser) throws XmlPullParserException, IOException {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                throw new IllegalStateException();
+            }
+
+            int number = 1;
+
+            while (number != 0) {
+                switch (parser.next()) {
+                    case XmlPullParser.START_TAG:
+                        number++;
+                        break;
+                    case XmlPullParser.END_TAG:
+                        number--;
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 }

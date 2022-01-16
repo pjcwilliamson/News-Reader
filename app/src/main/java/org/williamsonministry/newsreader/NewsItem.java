@@ -5,12 +5,14 @@ public class NewsItem {
     private String description;
     private String link;
     private String date;
+    private String coverImages;
 
-    public NewsItem(String title, String description, String link, String date) {
+    public NewsItem(String title, String description, String link, String date, String coverImages) {
         this.title = title;
         this.description = description;
         this.link = link;
         this.date = date;
+        this.coverImages = coverImages;
     }
 
     public String getTitle() {
@@ -45,6 +47,14 @@ public class NewsItem {
         this.date = date;
     }
 
+    public String getCoverImages() {
+        return coverImages;
+    }
+
+    public void setCoverImages(String coverImages) {
+        this.coverImages = coverImages;
+    }
+
     @Override
     public String toString() {
         return "NewsItem{" +
@@ -52,6 +62,7 @@ public class NewsItem {
                 ", description='" + description + '\'' +
                 ", link='" + link + '\'' +
                 ", date='" + date + '\'' +
+                ", coverImages='" + coverImages + '\'' +
                 '}';
     }
 }
