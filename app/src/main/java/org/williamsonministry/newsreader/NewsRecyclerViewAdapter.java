@@ -1,6 +1,7 @@
 package org.williamsonministry.newsreader;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,8 +9,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
+
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;
 
@@ -33,8 +37,19 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.txtTitle.setText(newsItems.get(position).getTitle());
         holder.txtDescription.setText(newsItems.get(position).getDescription());
-        holder.txtDate.setText(newsItems.get(position).getDescription());
-
+        holder.txtDate.setText(newsItems.get(position).getDate());
+        Glide.with(mContext)
+                .asBitmap()
+                .load(newsItems.get(position).getCoverImages())
+                .into(holder.coverImage);
+        holder.parent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, WebsiteActivity.class);
+                intent.putExtra("url", newsItems.get(position).getLink());
+                mContext.startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -50,7 +65,7 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView txtTitle, txtDescription, txtDate;
-        private CardView parent;
+        private MaterialCardView parent;
         private ImageView coverImage;
 
 

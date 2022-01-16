@@ -1,6 +1,7 @@
 package org.williamsonministry.newsreader;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.AsyncTask;
@@ -25,15 +26,20 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
 
+    private NewsRecyclerViewAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         news = new ArrayList<>();
-
         recyclerView = findViewById(R.id.recyclerView);
+        adapter = new NewsRecyclerViewAdapter(this);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        new GetNews().execute();
     }
 
     private class GetNews extends AsyncTask<Void, Void, Void> {
@@ -48,6 +54,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void unused) {
+            super.onPostExecute(unused);
+            adapter.setNewsItems(news);
         }
 
         private void initXMLPullParser(InputStream inputStream) throws XmlPullParserException, IOException {
@@ -66,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
                 parser.require(XmlPullParser.START_TAG, null, "channel");
                 while (parser.next() != XmlPullParser.END_TAG) {
-                    if (parser.next() != XmlPullParser.START_TAG) {
+                    if (parser.getEventType() != XmlPullParser.START_TAG) {
                         continue;
                     }
 
@@ -80,34 +92,47 @@ public class MainActivity extends AppCompatActivity {
                         String pubDate = "";
 
                         while (parser.next() != XmlPullParser.END_TAG) {
-                            if (parser.next() != XmlPullParser.START_TAG) {
+                            if (parser.getEventType() != XmlPullParser.START_TAG) {
                                 continue;
                             }
 
                             String tagName = parser.getName();
-                            switch (tagName) {
-                                case "title":
-                                    title = getContent(parser, tagName);
-                                    break;
-                                case "description":
-                                    description = getContent(parser, tagName);
-                                    break;
-                                case "link":
-                                    link = getContent(parser, tagName);
-                                    break;
-                                case "coverImages":
-                                    coverImages = getContent(parser, tagName);
-                                    break;
-                                case "pubDate":
-                                    pubDate = getContent(parser, tagName);
-                                    break;
-                                default:
-                                    skipTag(parser);
-                                    break;
+                            if (tagName.equals("title")) {
+                                title = getContent(parser, "title");
+                            } else if (tagName.equals("description")) {
+                                description = getContent(parser, "description");
+                            } else if (tagName.equals("link")) {
+                                link = getContent(parser, "link");
+                            } else if (tagName.equals("pubDate")) {
+                                pubDate = getContent(parser, "pubDate");
+                            } else if (tagName.equals("coverImages")) {
+                                coverImages = getContent(parser, "coverImages");
+                            } else {
+                                skipTag(parser);
                             }
+//                            switch (tagName) {
+//                                case "title":
+//                                    title = getContent(parser, tagName);
+//                                    break;
+//                                case "description":
+//                                    description = getContent(parser, tagName);
+//                                    break;
+//                                case "link":
+//                                    link = getContent(parser, tagName);
+//                                    break;
+//                                case "coverImages":
+//                                    coverImages = getContent(parser, tagName);
+//                                    break;
+//                                case "pubDate":
+//                                    pubDate = getContent(parser, tagName);
+//                                    break;
+//                                default:
+//                                    skipTag(parser);
+//                                    break;
+//                            }
                         }
 
-                        NewsItem item = new NewsItem(title, description, link, coverImages, pubDate);
+                        NewsItem item = new NewsItem(title, description, link, pubDate, coverImages);
                         news.add(item);
                     } else {
                         skipTag(parser);
